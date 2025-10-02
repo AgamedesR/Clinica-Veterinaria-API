@@ -1,12 +1,11 @@
-import express, { Express } from "express";
-import dentistaRoutes from "./routes/dentistaRoutes";
+import express from "express";
+import dotenv from "dotenv";
 
-const app: Express = express();
-const port = 3000;
+dotenv.config(); // carrega as variáveis do .env
 
-app.use(express.json());
-app.use(dentistaRoutes);
+const app = express();
+const port = process.env.PORT || 3000;
 
 app.listen(port, () => {
-  console.log(`Servidor rodando em http://localhost:${port}`);
+  console.log(`🚀 Servidor rodando em http://localhost:${port}`);
 });
