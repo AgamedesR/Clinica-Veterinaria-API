@@ -24,7 +24,7 @@ model Dentista {
   id            Int        @id @default(autoincrement())
   nome          String
   email         String     @unique
-  cro           String     @unique   // CRO no lugar do CRM
+  cro           String     @unique
   especialidade String
   consultas     Consulta[]
   createdAt     DateTime   @default(now())
