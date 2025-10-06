@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { Request, Response, Router } from "express";
 import { dentistaService } from "../services/dentistaService";
 import { dentistaCreateSchema, dentistaUpdateSchema } from "../validators/dentista.validator";
 import { ZodError } from "zod";
@@ -79,7 +79,10 @@ export const dentistaController = {
     } catch (error: any) {
       if (error instanceof ZodError) {
         res.status(400).json({ errors: error.flatten().fieldErrors });
-      } else if (error.message.includes("CRO já cadastrado") || error.message.includes("Email já cadastrado")) {
+      } else if (
+        error.message.includes("CRO já cadastrado") ||
+        error.message.includes("Email já cadastrado")
+      ) {
         res.status(409).json({ error: error.message });
       } else {
         res.status(500).json({ error: error.message });
@@ -124,7 +127,10 @@ export const dentistaController = {
     } catch (error: any) {
       if (error instanceof ZodError) {
         res.status(400).json({ errors: error.flatten().fieldErrors });
-      } else if (error.message.includes("CRO já cadastrado") || error.message.includes("Email já cadastrado")) {
+      } else if (
+        error.message.includes("CRO já cadastrado") ||
+        error.message.includes("Email já cadastrado")
+      ) {
         res.status(409).json({ error: error.message });
       } else {
         res.status(404).json({ error: error.message });
