@@ -1,7 +1,9 @@
+// src/index.ts
+
 import express from "express";
 import dotenv from "dotenv";
 import consultaRoutes from "./routes/consultaRoutes";
-import { setupSwagger } from "./swagger"; 
+import * as swaggerSetup from "./swagger"; 
 import pacienteRoutes from './routes/pacienteRoutes'; 
 
 dotenv.config();
@@ -15,8 +17,9 @@ console.log(consultaRoutes);
 app.use("/consultas", consultaRoutes);
 app.use("/pacientes", pacienteRoutes);
 
-setupSwagger(app);
+// Chama a função através do objeto importado (swaggerSetup.setupSwagger)
+swaggerSetup.setupSwagger(app);
 
 app.listen(port, () => {
-  console.log(`Servidor rodando em http://localhost:${port}`);
+  console.log(`Servidor rodando em http://localhost:${port}`);
 });
