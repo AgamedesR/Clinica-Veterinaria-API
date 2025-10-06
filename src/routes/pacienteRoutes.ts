@@ -1,19 +1,31 @@
 // src/routes/pacienteRoutes.ts
 
 import { Router } from 'express';
-import { PacienteController } from '../controllers/pacienteController'; 
+// NOVO: Importa o objeto estático 'pacienteController'
+import { pacienteController } from '../controllers/pacienteController'; 
+// Importe seu middleware de validação se estiver usando-o globalmente. Ex:
+// import { validate } from '../middlewares/validationMiddleware'; 
+// import { pacienteCreateSchema } from '../validators/paciente.validator'; 
 
+// PADRÃO: Usa 'router' em vez de 'pacienteRoutes'
+const router = Router();
 
-// 1. Apenas UMA declaração para cada variável
-const pacienteRoutes = Router();
-const pacienteController = new PacienteController();
+// A LÓGICA DE VALIDAÇÃO DEVE SER INCLUÍDA SEPARADAMENTE
+// Exemplo com validação Zod (se estiver usando middleware):
+// router.post('/', validate(pacienteCreateSchema), pacienteController.create);
 
-pacienteRoutes.post('/', pacienteController.create);
+// 1. Rotas GET
+router.get("/", pacienteController.getAll);
+router.get("/:id", pacienteController.getById);
 
-// O resto das suas rotas (não precisam de validação no corpo):
-pacienteRoutes.get('/', pacienteController.findAll); 
-pacienteRoutes.get('/:id', pacienteController.findById);
-pacienteRoutes.put('/:id', pacienteController.update); 
-pacienteRoutes.delete('/:id', pacienteController.delete); 
+// 2. Rota POST (Criação)
+router.post("/", pacienteController.create);
 
-export default pacienteRoutes;
+// 3. Rota PUT (Atualização)
+// Usamos o método 'update' definido no objeto pacienteController
+router.put("/:id", pacienteController.update); 
+
+// 4. Rota DELETE (Remoção)
+// Usamos o método 'remove' definido no objeto pacienteController (que substitui 'delete')
+router.delete("/:id", pacienteController.remove); 
+export default router;
