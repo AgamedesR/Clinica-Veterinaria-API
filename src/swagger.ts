@@ -12,6 +12,38 @@ const options: swaggerJsdoc.Options = {
     },
     components: {
       schemas: {
+        // Schemas Dentista
+        Dentista: {
+          type: "object",
+          properties: {
+            id: { type: "integer" },
+            nome: { type: "string" },
+            cro: { type: "string" },
+            email: { type: "string" },
+            telefone: { type: "string" },
+          },
+        },
+        DentistaCreate: {
+          type: "object",
+          required: ["nome", "cro", "email", "telefone"],
+          properties: {
+            nome: { type: "string" },
+            cro: { type: "string" },
+            email: { type: "string" },
+            telefone: { type: "string" },
+          },
+        },
+        DentistaUpdate: {
+          type: "object",
+          properties: {
+            nome: { type: "string" },
+            cro: { type: "string" },
+            email: { type: "string" },
+            telefone: { type: "string" },
+          },
+        },
+
+        // Schemas de Consulta
         ConsultaCreate: {
           type: "object",
           required: ["dataHora", "pacienteId", "dentistaId"],
@@ -29,6 +61,14 @@ const options: swaggerJsdoc.Options = {
             motivo: { type: "string" },
             pacienteId: { type: "integer" },
             dentistaId: { type: "integer" },
+          },
+        },
+
+        // Schema de erro genérico
+        Error: {
+          type: "object",
+          properties: {
+            error: { type: "string" },
           },
         },
       },
