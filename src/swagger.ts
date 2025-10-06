@@ -45,16 +45,46 @@ const options: swaggerJsdoc.Options = {
 
         //Schemas de consulta
         
-        ConsultaCreate: {
-          type: "object",
-          required: ["dataHora", "pacienteId", "dentistaId"],
-          properties: {
-            dataHora: { type: "string", format: "date-time" },
-            motivo: { type: "string" },
-            pacienteId: { type: "integer" },
-            dentistaId: { type: "integer" },
-          },
-        },
+  ConsultaCreate: {
+    type: "object",
+    required: ["dataHora", "pacienteId", "dentistaId"],
+    properties: {
+      dataHora: { type: "string", format: "date-time" },
+      motivo: { type: "string" },
+      pacienteId: { type: "integer" },
+      dentistaId: { type: "integer" },
+    },
+  },
+
+  // Schemas de secretario
+  Secretario: {
+    type: "object",
+    properties: {
+      id: { type: "integer" },
+      nome: { type: "string" },
+      email: { type: "string" },
+      telefone: { type: "string" },
+      createdAt: { type: "string", format: "date-time" },
+      updatedAt: { type: "string", format: "date-time" },
+    },
+  },
+  SecretarioCreate: {
+    type: "object",
+    required: ["nome", "email", "telefone"],
+    properties: {
+      nome: { type: "string" },
+      email: { type: "string" },
+      telefone: { type: "string" },
+    },
+  },
+  SecretarioUpdate: {
+    type: "object",
+    properties: {
+      nome: { type: "string" },
+      email: { type: "string" },
+      telefone: { type: "string" },
+    },
+  },
         ConsultaUpdate: {
           type: "object",
           properties: {
@@ -63,18 +93,6 @@ const options: swaggerJsdoc.Options = {
             pacienteId: { type: "integer" },
             dentistaId: { type: "integer" },
           },
-          Paciente: {
-            type: "object",
-            properties: {
-                id: { type: "integer" },
-                nome: { type: "string" },
-                email: { type: "string", format: "email" },
-                cpf: { type: "string", description: "11 dígitos" },
-                telefone: { type: "string" },
-                dataNascimento: { type: "string", format: "date" },
-            },
-            required: ["nome", "email", "cpf", "dataNascimento"],
-         },
         },
 
         //Schemas de erro
