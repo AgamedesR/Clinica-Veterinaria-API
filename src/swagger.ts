@@ -12,7 +12,7 @@ const options: swaggerJsdoc.Options = {
     },
     components: {
       schemas: {
-        
+        // Schema dentista
         Dentista: {
           type: "object",
           properties: {
@@ -43,6 +43,8 @@ const options: swaggerJsdoc.Options = {
           },
         },
 
+        //Schema consulta
+        
         ConsultaCreate: {
           type: "object",
           required: ["dataHora", "pacienteId", "dentistaId"],
