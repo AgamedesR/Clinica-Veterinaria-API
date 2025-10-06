@@ -1,20 +1,34 @@
+// src/controllers/pacienteController.ts
+
 import { Request, Response } from 'express';
 import { prisma } from '../utils/prisma'; 
+import { pacienteCreateSchema } from '../validators/paciente.validator'; 
 
 export class PacienteController {
     async create(req: Request, res: Response) {
         try {
-            const { nome, email, cpf, telefone, dataNascimento } = req.body;
-            const dataNascimentoDate = new Date(dataNascimento);
+            // VALIDAÇÃO ZOD (com a correção do .transform na data)
+            const validatedData = pacienteCreateSchema.parse(req.body); 
+
             const paciente = await prisma.paciente.create({
-                data: { nome, email, cpf, telefone, dataNascimento: dataNascimentoDate },
+                data: validatedData, 
             });
+
             return res.status(201).json(paciente);
-        } catch (error) {
+        } catch (error: any) {
+            
+            // TRATAR ERROS ZOD
+            if (error.issues) { 
+                return res.status(400).json({ error: 'Erro de validação nos dados.', details: error.issues });
+            }
+
+            // TRATAR ERROS DO PRISMA (Duplicidade e outros)
             if (error.code === 'P2002') {
                 return res.status(409).json({ error: 'CPF ou Email já cadastrado.' });
             }
-            return res.status(500).json({ error: 'Erro ao criar paciente.' });
+
+            // SE CAIR AQUI, é o erro de tipo de data ou outro erro interno.
+            return res.status(500).json({ error: 'Erro ao criar paciente. Verifique os tipos de dados.' });
         }
     }
 
@@ -34,7 +48,9 @@ export class PacienteController {
         try {
             const id = parseInt(req.params.id);
             const data = req.body;
+            
             if (data.dataNascimento) { data.dataNascimento = new Date(data.dataNascimento); }
+            
             const paciente = await prisma.paciente.update({ where: { id }, data: data });
             return res.status(200).json(paciente);
         } catch (error) {

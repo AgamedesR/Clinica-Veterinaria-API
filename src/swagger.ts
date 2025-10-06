@@ -63,6 +63,18 @@ const options: swaggerJsdoc.Options = {
             pacienteId: { type: "integer" },
             dentistaId: { type: "integer" },
           },
+          Paciente: {
+            type: "object",
+            properties: {
+                id: { type: "integer" },
+                nome: { type: "string" },
+                email: { type: "string", format: "email" },
+                cpf: { type: "string", description: "11 dígitos" },
+                telefone: { type: "string" },
+                dataNascimento: { type: "string", format: "date" },
+            },
+            required: ["nome", "email", "cpf", "dataNascimento"],
+         },
         },
 
         //Schemas de erro
