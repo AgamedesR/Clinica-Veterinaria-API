@@ -1,10 +1,12 @@
 import { Router } from "express";
+import { dentistaController } from "../controllers/dentistaController";
 
 const router = Router();
 
-// Define your routes here, for example:
-router.get("/", (req, res) => {
-  res.send("Dentista route working!");
-});
+router.get("/", dentistaController.getAll);
+router.get("/:id", dentistaController.getById);
+router.post("/", dentistaController.create);
+router.put("/:id", dentistaController.update);
+router.delete("/:id", dentistaController.remove);
 
 export default router;
