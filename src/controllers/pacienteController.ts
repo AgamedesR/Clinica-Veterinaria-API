@@ -144,8 +144,6 @@ export const pacienteController = {
   update: async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.id);
-      
-      // Zod valida e converte a data se presente (consistência com create)
       const validatedData = pacienteUpdateSchema.parse(req.body);
       
       const paciente = await prisma.paciente.update({ where: { id }, data: validatedData });

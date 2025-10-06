@@ -10,11 +10,6 @@ import { pacienteController } from '../controllers/pacienteController';
 // PADRÃO: Usa 'router' em vez de 'pacienteRoutes'
 const router = Router();
 
-// A LÓGICA DE VALIDAÇÃO DEVE SER INCLUÍDA SEPARADAMENTE
-// Exemplo com validação Zod (se estiver usando middleware):
-// router.post('/', validate(pacienteCreateSchema), pacienteController.create);
-
-// 1. Rotas GET
 router.get("/", pacienteController.getAll);
 router.get("/:id", pacienteController.getById);
 
