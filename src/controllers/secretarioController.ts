@@ -1,4 +1,4 @@
-mport { Request, Response } from "express";
+import { Request, Response } from "express";
 import { secretarioService } from "../services/secretarioService";
 import { secretarioCreateSchema, secretarioUpdateSchema } from "../validators/secretario.validator";
 import { ZodError } from "zod";
