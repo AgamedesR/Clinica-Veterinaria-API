@@ -1,5 +1,8 @@
-import { Request, Response } from 'express';
-import * as secretarioService from '../services/secretarioService';
+import { Request, Response } from "express";
+import * as secretarioService from "../services/secretarioService";
+import { ZodError } from "zod";
+import { secretarioCreateSchema, secretarioUpdateSchema } from "../validators/secretario.validator";
+
 
 /**
  * @swagger
@@ -124,12 +127,29 @@ import * as secretarioService from '../services/secretarioService';
  */
 export const createSecretario = async (req: Request, res: Response) => {
   try {
-    const secretario = await secretarioService.create(req.body);
+    // Validação com Zod
+    const validatedData = secretarioCreateSchema.parse(req.body);
+
+    const secretario = await secretarioService.create(validatedData);
     return res.status(201).json(secretario);
   } catch (error: any) {
-    if (error.code === 'P2002') {
-      return res.status(409).json({ message: 'Email já está em uso.' });
+    // Erros de validação
+    if (error instanceof ZodError) {
+      return res.status(400).json({
+        message: "Erro de validação.",
+        errors: error.errors.map((err) => ({
+          campo: err.path.join("."),
+          mensagem: err.message,
+        })),
+      });
     }
+
+    // Erro de e-mail duplicado (Prisma)
+    if (error.code === "P2002") {
+      return res.status(409).json({ message: "Email já está em uso." });
+    }
+
+    // Erro interno
     return res.status(500).json({ message: error.message });
   }
 };
@@ -189,7 +209,8 @@ export const getAllSecretarios = async (req: Request, res: Response) => {
 export const getSecretarioById = async (req: Request, res: Response) => {
   try {
     const secretario = await secretarioService.getById(Number(req.params.id));
-    if (!secretario) return res.status(404).json({ message: 'Secretário(a) não encontrado(a).' });
+    if (!secretario)
+      return res.status(404).json({ message: "Secretário(a) não encontrado(a)." });
     return res.json(secretario);
   } catch (error: any) {
     return res.status(500).json({ message: error.message });
@@ -231,11 +252,31 @@ export const getSecretarioById = async (req: Request, res: Response) => {
  */
 export const updateSecretario = async (req: Request, res: Response) => {
   try {
-    const secretario = await secretarioService.update(Number(req.params.id), req.body);
+    // Validação com Zod 
+    const validatedData = secretarioUpdateSchema.parse(req.body);
+
+    const secretario = await secretarioService.update(
+      Number(req.params.id),
+      validatedData
+    );
     return res.json(secretario);
   } catch (error: any) {
-    if (error.code === 'P2025') return res.status(404).json({ message: 'Secretário(a) não encontrado(a).' });
-    if (error.code === 'P2002') return res.status(409).json({ message: 'Email já está em uso.' });
+    if (error instanceof ZodError) {
+      return res.status(400).json({
+        message: "Erro de validação.",
+        errors: error.errors.map((err) => ({
+          campo: err.path.join("."),
+          mensagem: err.message,
+        })),
+      });
+    }
+
+    if (error.code === "P2025")
+      return res.status(404).json({ message: "Secretário(a) não encontrado(a)." });
+
+    if (error.code === "P2002")
+      return res.status(409).json({ message: "Email já está em uso." });
+
     return res.status(500).json({ message: error.message });
   }
 };
@@ -266,7 +307,8 @@ export const deleteSecretario = async (req: Request, res: Response) => {
     await secretarioService.remove(Number(req.params.id));
     return res.status(204).send();
   } catch (error: any) {
-    if (error.code === 'P2025') return res.status(404).json({ message: 'Secretário(a) não encontrado(a).' });
+    if (error.code === "P2025")
+      return res.status(404).json({ message: "Secretário(a) não encontrado(a)." });
     return res.status(500).json({ message: error.message });
   }
 };
