@@ -1,314 +1,154 @@
-import { Request, Response } from "express";
-import * as secretarioService from "../services/secretarioService";
-import { ZodError } from "zod";
+mport { Request, Response } from "express";
+import { secretarioService } from "../services/secretarioService";
 import { secretarioCreateSchema, secretarioUpdateSchema } from "../validators/secretario.validator";
+import { ZodError } from "zod";
 
-
-/**
- * @swagger
- * components:
- *   schemas:
- *     Secretario:
- *       type: object
- *       required:
- *         - nome
- *         - email
- *         - telefone
- *       properties:
- *         id:
- *           type: integer
- *           description: ID único do secretário
- *         nome:
- *           type: string
- *           description: Nome completo do secretário
- *         email:
- *           type: string
- *           format: email
- *           description: E-mail do secretário
- *         telefone:
- *           type: string
- *           description: Telefone do secretário
- *         createdAt:
- *           type: string
- *           format: date-time
- *           description: Data de criação do registro
- *         updatedAt:
- *           type: string
- *           format: date-time
- *           description: Data da última atualização
- *       example:
- *         id: 1
- *         nome: "João Silva"
- *         email: "joao.silva@email.com"
- *         telefone: "(11) 99999-9999"
- *         createdAt: "2023-01-01T00:00:00.000Z"
- *         updatedAt: "2023-01-01T00:00:00.000Z"
- * 
- *     SecretarioInput:
- *       type: object
- *       required:
- *         - nome
- *         - email
- *         - telefone
- *       properties:
- *         nome:
- *           type: string
- *           description: Nome completo do secretário
- *         email:
- *           type: string
- *           format: email
- *           description: E-mail do secretário
- *         telefone:
- *           type: string
- *           description: Telefone do secretário
- *       example:
- *         nome: "João Silva"
- *         email: "joao.silva@email.com"
- *         telefone: "(11) 99999-9999"
- * 
- *   responses:
- *     NotFound:
- *       description: Secretário não encontrado
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               message:
- *                 type: string
- *                 example: "Secretário(a) não encontrado(a)."
- * 
- *     Conflict:
- *       description: E-mail já está em uso
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               message:
- *                 type: string
- *                 example: "Email já está em uso."
- * 
- *     InternalError:
- *       description: Erro interno do servidor
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               message:
- *                 type: string
- *                 example: "Erro interno do servidor"
- */
-
-/**
- * @swagger
- * /secretarios:
- *   post:
- *     summary: Cria um novo secretário
- *     tags: [Secretários]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/SecretarioInput'
- *     responses:
- *       201:
- *         description: Secretário criado com sucesso
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Secretario'
- *       409:
- *         $ref: '#/components/responses/Conflict'
- *       500:
- *         $ref: '#/components/responses/InternalError'
- */
-export const createSecretario = async (req: Request, res: Response) => {
-  try {
-    // Validação com Zod
-    const validatedData = secretarioCreateSchema.parse(req.body);
-
-    const secretario = await secretarioService.create(validatedData);
-    return res.status(201).json(secretario);
-  } catch (error: any) {
-    // Erros de validação
-    if (error instanceof ZodError) {
-      return res.status(400).json({
-        message: "Erro de validação.",
-        errors: error.errors.map((err) => ({
-          campo: err.path.join("."),
-          mensagem: err.message,
-        })),
-      });
+export const secretarioController = {
+  /**
+   * @swagger
+   * /secretarios:
+   *   get:
+   *     summary: Lista todos os secretários
+   *     tags: [Secretarios]
+   *     responses:
+   *       200:
+   *         description: Lista de secretários retornada com sucesso
+   */
+  getAll: async (req: Request, res: Response) => {
+    try {
+      const secretarios = await secretarioService.getAll();
+      res.json(secretarios);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
     }
+  },
 
-    // Erro de e-mail duplicado (Prisma)
-    if (error.code === "P2002") {
-      return res.status(409).json({ message: "Email já está em uso." });
+  /**
+   * @swagger
+   * /secretarios/{id}:
+   *   get:
+   *     summary: Retorna um secretário por ID
+   *     tags: [Secretarios]
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: integer
+   *     responses:
+   *       200:
+   *         description: Secretário encontrado
+   *       404:
+   *         description: Secretário não encontrado
+   */
+  getById: async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      const secretario = await secretarioService.getById(id);
+      res.json(secretario);
+    } catch (error: any) {
+      res.status(404).json({ error: error.message });
     }
+  },
 
-    // Erro interno
-    return res.status(500).json({ message: error.message });
-  }
-};
-
-/**
- * @swagger
- * /secretarios:
- *   get:
- *     summary: Retorna todos os secretários
- *     tags: [Secretários]
- *     responses:
- *       200:
- *         description: Lista de todos os secretários
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Secretario'
- *       500:
- *         $ref: '#/components/responses/InternalError'
- */
-export const getAllSecretarios = async (req: Request, res: Response) => {
-  try {
-    const secretarios = await secretarioService.getAll();
-    return res.json(secretarios);
-  } catch (error: any) {
-    return res.status(500).json({ message: error.message });
-  }
-};
-
-/**
- * @swagger
- * /secretarios/{id}:
- *   get:
- *     summary: Retorna um secretário pelo ID
- *     tags: [Secretários]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
- *         description: ID do secretário
- *     responses:
- *       200:
- *         description: Secretário encontrado
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Secretario'
- *       404:
- *         $ref: '#/components/responses/NotFound'
- *       500:
- *         $ref: '#/components/responses/InternalError'
- */
-export const getSecretarioById = async (req: Request, res: Response) => {
-  try {
-    const secretario = await secretarioService.getById(Number(req.params.id));
-    if (!secretario)
-      return res.status(404).json({ message: "Secretário(a) não encontrado(a)." });
-    return res.json(secretario);
-  } catch (error: any) {
-    return res.status(500).json({ message: error.message });
-  }
-};
-
-/**
- * @swagger
- * /secretarios/{id}:
- *   put:
- *     summary: Atualiza um secretário existente
- *     tags: [Secretários]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
- *         description: ID do secretário
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/SecretarioInput'
- *     responses:
- *       200:
- *         description: Secretário atualizado com sucesso
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Secretario'
- *       404:
- *         $ref: '#/components/responses/NotFound'
- *       409:
- *         $ref: '#/components/responses/Conflict'
- *       500:
- *         $ref: '#/components/responses/InternalError'
- */
-export const updateSecretario = async (req: Request, res: Response) => {
-  try {
-    // Validação com Zod 
-    const validatedData = secretarioUpdateSchema.parse(req.body);
-
-    const secretario = await secretarioService.update(
-      Number(req.params.id),
-      validatedData
-    );
-    return res.json(secretario);
-  } catch (error: any) {
-    if (error instanceof ZodError) {
-      return res.status(400).json({
-        message: "Erro de validação.",
-        errors: error.errors.map((err) => ({
-          campo: err.path.join("."),
-          mensagem: err.message,
-        })),
-      });
+  /**
+   * @swagger
+   * /secretarios:
+   *   post:
+   *     summary: Cria um novo secretário
+   *     tags: [Secretarios]
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             $ref: '#/components/schemas/SecretarioCreate'
+   *     responses:
+   *       201:
+   *         description: Secretário criado com sucesso
+   *       400:
+   *         description: Dados inválidos
+   */
+  create: async (req: Request, res: Response) => {
+    try {
+      const parsed = secretarioCreateSchema.parse(req.body);
+      const secretario = await secretarioService.create(parsed);
+      res.status(201).json(secretario);
+    } catch (error: any) {
+      if (error instanceof ZodError) {
+        res.status(400).json({ errors: error.flatten().fieldErrors });
+      } else {
+        res.status(500).json({ error: error.message });
+      }
     }
+  },
 
-    if (error.code === "P2025")
-      return res.status(404).json({ message: "Secretário(a) não encontrado(a)." });
+  /**
+   * @swagger
+   * /secretarios/{id}:
+   *   put:
+   *     summary: Atualiza um secretário
+   *     tags: [Secretarios]
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: integer
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             $ref: '#/components/schemas/SecretarioUpdate'
+   *     responses:
+   *       200:
+   *         description: Secretário atualizado com sucesso
+   *       400:
+   *         description: Dados inválidos
+   *       404:
+   *         description: Secretário não encontrado
+   */
+  update: async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      const parsed = secretarioUpdateSchema.parse(req.body);
+      const updated = await secretarioService.update(id, parsed);
+      res.json(updated);
+    } catch (error: any) {
+      if (error instanceof ZodError) {
+        res.status(400).json({ errors: error.flatten().fieldErrors });
+      } else {
+        res.status(404).json({ error: error.message });
+      }
+    }
+  },
 
-    if (error.code === "P2002")
-      return res.status(409).json({ message: "Email já está em uso." });
-
-    return res.status(500).json({ message: error.message });
-  }
-};
-
-/**
- * @swagger
- * /secretarios/{id}:
- *   delete:
- *     summary: Remove um secretário
- *     tags: [Secretários]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
- *         description: ID do secretário
- *     responses:
- *       204:
- *         description: Secretário removido com sucesso
- *       404:
- *         $ref: '#/components/responses/NotFound'
- *       500:
- *         $ref: '#/components/responses/InternalError'
- */
-export const deleteSecretario = async (req: Request, res: Response) => {
-  try {
-    await secretarioService.remove(Number(req.params.id));
-    return res.status(204).send();
-  } catch (error: any) {
-    if (error.code === "P2025")
-      return res.status(404).json({ message: "Secretário(a) não encontrado(a)." });
-    return res.status(500).json({ message: error.message });
-  }
+  /**
+   * @swagger
+   * /secretarios/{id}:
+   *   delete:
+   *     summary: Remove um secretário
+   *     tags: [Secretarios]
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: integer
+   *     responses:
+   *       200:
+   *         description: Secretário removido com sucesso
+   *       404:
+   *         description: Secretário não encontrado
+   */
+  remove: async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      const result = await secretarioService.remove(id);
+      res.json(result);
+    } catch (error: any) {
+      res.status(404).json({ error: error.message });
+    }
+  },
 };

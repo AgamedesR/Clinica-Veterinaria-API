@@ -1,18 +1,15 @@
 import { z } from "zod";
 
 export const secretarioCreateSchema = z.object({
-  nome: z
-    .string({ required_error: "O nome é obrigatório." })
-    .min(3, "O nome deve ter pelo menos 3 caracteres."),
-  email: z
-    .string({ required_error: "O email é obrigatório." })
-    .email("Email inválido."),
-  telefone: z
-    .string({ required_error: "O telefone é obrigatório." })
-    .min(8, "Telefone inválido."),
+  nome: z.string(),
+  email: z.string().email(),
+  senha: z.string().min(6),
+  telefone: z.string().optional(),
 });
 
- * ✅ Schema de atualização de Secretário
- * Permite atualização parcial (todos os campos opcionais).
- */
-export const secretarioUpdateSchema = secretarioCreateSchema.partial();
+export const secretarioUpdateSchema = z.object({
+  nome: z.string().optional(),
+  email: z.string().email().optional(),
+  senha: z.string().min(6).optional(),
+  telefone: z.string().optional(),
+});

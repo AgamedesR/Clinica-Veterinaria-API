@@ -1,4 +1,4 @@
-import { Request, Response, Router } from "express";
+import { Request, Response } from "express";
 import { dentistaService } from "../services/dentistaService";
 import { dentistaCreateSchema, dentistaUpdateSchema } from "../validators/dentista.validator";
 import { ZodError } from "zod";
@@ -68,8 +68,6 @@ export const dentistaController = {
    *         description: Dentista criado com sucesso
    *       400:
    *         description: Dados inválidos
-   *       409:
-   *         description: CRO ou Email já cadastrado
    */
   create: async (req: Request, res: Response) => {
     try {
@@ -79,11 +77,6 @@ export const dentistaController = {
     } catch (error: any) {
       if (error instanceof ZodError) {
         res.status(400).json({ errors: error.flatten().fieldErrors });
-      } else if (
-        error.message.includes("CRO já cadastrado") ||
-        error.message.includes("Email já cadastrado")
-      ) {
-        res.status(409).json({ error: error.message });
       } else {
         res.status(500).json({ error: error.message });
       }
@@ -115,8 +108,6 @@ export const dentistaController = {
    *         description: Dados inválidos
    *       404:
    *         description: Dentista não encontrado
-   *       409:
-   *         description: CRO ou Email já cadastrado por outro dentista
    */
   update: async (req: Request, res: Response) => {
     try {
@@ -127,11 +118,6 @@ export const dentistaController = {
     } catch (error: any) {
       if (error instanceof ZodError) {
         res.status(400).json({ errors: error.flatten().fieldErrors });
-      } else if (
-        error.message.includes("CRO já cadastrado") ||
-        error.message.includes("Email já cadastrado")
-      ) {
-        res.status(409).json({ error: error.message });
       } else {
         res.status(404).json({ error: error.message });
       }
@@ -155,8 +141,6 @@ export const dentistaController = {
    *         description: Dentista removido com sucesso
    *       404:
    *         description: Dentista não encontrado
-   *       409:
-   *         description: Não é possível excluir o dentista, pois há consultas associadas a ele.
    */
   remove: async (req: Request, res: Response) => {
     try {
@@ -164,11 +148,7 @@ export const dentistaController = {
       const result = await dentistaService.remove(id);
       res.json(result);
     } catch (error: any) {
-      if (error.message.includes("consultas associadas")) {
-        res.status(409).json({ error: error.message });
-      } else {
-        res.status(404).json({ error: error.message });
-      }
+      res.status(404).json({ error: error.message });
     }
   },
 };

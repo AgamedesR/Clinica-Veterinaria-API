@@ -1,12 +1,12 @@
-import { Router } from 'express';
-import secretarioController from '../controllers/secretarioController';
+import { Router } from "express";
+import { secretarioController } from "../controllers/secretarioController";
 
-const secretarioRoutes = Router();
+const router = Router();
 
-secretarioRoutes.post('/', secretarioController.create);
-secretarioRoutes.get('/', secretarioController.getAll);
-secretarioRoutes.get('/:id', secretarioController.getById);
-secretarioRoutes.put('/:id', secretarioController.update);
-secretarioRoutes.delete('/:id', secretarioController.delete);
+router.get("/", secretarioController.getAll);
+router.get("/:id", secretarioController.getById);
+router.post("/", secretarioController.create);
+router.put("/:id", secretarioController.update);
+router.delete("/:id", secretarioController.remove);
 
-export default secretarioRoutes;
+export default router;

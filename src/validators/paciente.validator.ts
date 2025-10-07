@@ -1,16 +1,22 @@
 import { z } from "zod";
 
+const dataNascimentoSchema = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/, "Formato de data inválido (use YYYY-MM-DD)")
+  .transform((str) => new Date(str));
+
 export const pacienteCreateSchema = z.object({
-  nome: z.string().min(3, "O nome deve ter no mínimo 3 caracteres."),
-  email: z.string().email("Email inválido."),
-  cpf: z.string().length(11, "O CPF deve ter 11 dígitos."),
-  telefone: z.string().optional().nullable(),
-  dataNascimento: z
-    .string()
-    .refine((str) => !isNaN(Date.parse(str)), {
-      message: "Data de nascimento inválida (use o formato YYYY-MM-DD).",
-    })
-    .transform((str) => new Date(str)),
+  nome: z.string(),
+  email: z.string().email(),
+  cpf: z.string(),
+  telefone: z.string().optional(),
+  dataNascimento: dataNascimentoSchema,
 });
 
-export const pacienteUpdateSchema = pacienteCreateSchema.partial();
+export const pacienteUpdateSchema = z.object({
+  nome: z.string().optional(),
+  email: z.string().email().optional(),
+  cpf: z.string().optional(),
+  telefone: z.string().optional(),
+  dataNascimento: dataNascimentoSchema.optional(),
+});

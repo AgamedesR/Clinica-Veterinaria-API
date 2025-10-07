@@ -1,11 +1,10 @@
-// src/index.ts
-
 import express from "express";
 import dotenv from "dotenv";
 import consultaRoutes from "./routes/consultaRoutes";
-import * as swaggerSetup from "./swagger"; 
-import pacienteRoutes from './routes/pacienteRoutes'; 
-import dentistaRoutes from './routes/dentistaRoutes';
+import dentistaRoutes from "./routes/dentistaRoutes";
+import pacienteRoutes from "./routes/pacienteRoutes";
+import secretarioRoutes from "./routes/secretarioRoutes";
+import { setupSwagger } from "./swagger";
 
 dotenv.config();
 
@@ -14,14 +13,14 @@ const port = process.env.PORT || 3000;
 
 app.use(express.json());
 
-console.log(consultaRoutes);
 app.use("/consultas", consultaRoutes);
+app.use("/dentistas", dentistaRoutes);
 app.use("/pacientes", pacienteRoutes);
-app.use("/dentistas", dentistaRoutes); 
+app.use("/secretarios", secretarioRoutes);
 
-// Chama a função através do objeto importado (swaggerSetup.setupSwagger)
-swaggerSetup.setupSwagger(app);
+setupSwagger(app);
 
 app.listen(port, () => {
-  console.log(`Servidor rodando em http://localhost:${port}`);
+  console.log(`Servidor rodando em http://localhost:${port}`);
+  console.log(`Swagger disponível em http://localhost:${port}/api-docs`);
 });
