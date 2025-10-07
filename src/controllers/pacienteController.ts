@@ -1,72 +1,180 @@
-// src/controllers/pacienteController.ts
-
 import { Request, Response } from 'express';
 import { prisma } from '../utils/prisma'; 
-import { pacienteCreateSchema } from '../validators/paciente.validator'; 
+import { pacienteCreateSchema, pacienteUpdateSchema } from '../validators/paciente.validator'; 
+import { ZodError } from 'zod';
 
-export class PacienteController {
-    async create(req: Request, res: Response) {
-        try {
-            // VALIDAÇÃO ZOD (com a correção do .transform na data)
-            const validatedData = pacienteCreateSchema.parse(req.body); 
+export const pacienteController = {
 
-            const paciente = await prisma.paciente.create({
-                data: validatedData, 
-            });
-
-            return res.status(201).json(paciente);
-        } catch (error: any) {
-            
-            // TRATAR ERROS ZOD
-            if (error.issues) { 
-                return res.status(400).json({ error: 'Erro de validação nos dados.', details: error.issues });
-            }
-
-            // TRATAR ERROS DO PRISMA (Duplicidade e outros)
-            if (error.code === 'P2002') {
-                return res.status(409).json({ error: 'CPF ou Email já cadastrado.' });
-            }
-
-            // SE CAIR AQUI, é o erro de tipo de data ou outro erro interno.
-            return res.status(500).json({ error: 'Erro ao criar paciente. Verifique os tipos de dados.' });
-        }
+  /**
+   * @swagger
+   * /pacientes:
+   *   get:
+   *     summary: Lista todos os pacientes
+   *     tags: [Pacientes]
+   *     responses:
+   *       200:
+   *         description: Lista de pacientes retornada com sucesso
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: array
+   *               items:
+   *                 $ref: '#/components/schemas/Paciente'
+   */
+  getAll: async (req: Request, res: Response) => {
+    try {
+      const pacientes = await prisma.paciente.findMany();
+      res.status(200).json(pacientes);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message || 'Erro ao buscar pacientes.' });
     }
+  },
 
-    async findAll(req: Request, res: Response) {
-        const pacientes = await prisma.paciente.findMany();
-        return res.status(200).json(pacientes);
+  /**
+   * @swagger
+   * /pacientes/{id}:
+   *   get:
+   *     summary: Retorna um paciente por ID
+   *     tags: [Pacientes]
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: integer
+   *     responses:
+   *       200:
+   *         description: Paciente encontrado
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Paciente'
+   *       404:
+   *         description: Paciente não encontrado
+   */
+  getById: async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      const paciente = await prisma.paciente.findUnique({ where: { id } });
+      if (!paciente) return res.status(404).json({ error: 'Paciente não encontrado.' });
+      res.status(200).json(paciente);
+    } catch (error: any) {
+      res.status(500).json({ error: 'Erro ao buscar paciente.' });
     }
-    
-    async findById(req: Request, res: Response) {
-        const id = parseInt(req.params.id); 
-        const paciente = await prisma.paciente.findUnique({ where: { id } });
-        if (!paciente) { return res.status(404).json({ error: 'Paciente não encontrado.' }); }
-        return res.status(200).json(paciente);
-    }
+  },
 
-    async update(req: Request, res: Response) {
-        try {
-            const id = parseInt(req.params.id);
-            const data = req.body;
-            
-            if (data.dataNascimento) { data.dataNascimento = new Date(data.dataNascimento); }
-            
-            const paciente = await prisma.paciente.update({ where: { id }, data: data });
-            return res.status(200).json(paciente);
-        } catch (error) {
-            if (error.code === 'P2025') { return res.status(404).json({ error: 'Paciente não encontrado para atualização.' }); }
-            return res.status(500).json({ error: 'Erro ao atualizar paciente.' });
-        }
+  /**
+   * @swagger
+   * /pacientes:
+   *   post:
+   *     summary: Cria um novo paciente
+   *     tags: [Pacientes]
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             $ref: '#/components/schemas/Paciente'
+   *     responses:
+   *       201:
+   *         description: Paciente criado com sucesso
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Paciente'
+   *       400:
+   *         description: Dados inválidos (Zod Error)
+   *       409:
+   *         description: CPF ou Email já cadastrado
+   */
+  create: async (req: Request, res: Response) => {
+    try {
+      const validatedData = pacienteCreateSchema.parse(req.body); 
+      const paciente = await prisma.paciente.create({ data: validatedData });
+      res.status(201).json(paciente);
+    } catch (error: any) {
+      if (error instanceof ZodError) {
+        res.status(400).json({ errors: error.flatten().fieldErrors });
+      } else if (error.code === 'P2002') {
+        res.status(409).json({ error: 'CPF ou Email já cadastrado.' });
+      } else {
+        res.status(500).json({ error: 'Erro ao criar paciente.' });
+      }
     }
+  },
 
-    async delete(req: Request, res: Response) {
-        try {
-            const id = parseInt(req.params.id);
-            await prisma.paciente.delete({ where: { id } });
-            return res.status(204).send();
-        } catch (error) {
-            if (error.code === 'P2025') { return res.status(404).json({ error: 'Paciente não encontrado para exclusão.' }); }
-            return res.status(500).json({ error: 'Erro ao deletar paciente.' });
-        }
+  /**
+   * @swagger
+   * /pacientes/{id}:
+   *   put:
+   *     summary: Atualiza um paciente
+   *     tags: [Pacientes]
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: integer
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             $ref: '#/components/schemas/PacienteUpdate'
+   *     responses:
+   *       200:
+   *         description: Paciente atualizado com sucesso
+   *       400:
+   *         description: Dados inválidos (Zod Error)
+   *       404:
+   *         description: Paciente não encontrado
+   */
+  update: async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      const validatedData = pacienteUpdateSchema.parse(req.body);
+      const paciente = await prisma.paciente.update({ where: { id }, data: validatedData });
+      res.status(200).json(paciente);
+    } catch (error: any) {
+      if (error instanceof ZodError) {
+        res.status(400).json({ errors: error.flatten().fieldErrors });
+      } else if (error.code === 'P2025') {
+        res.status(404).json({ error: 'Paciente não encontrado.' });
+      } else {
+        res.status(500).json({ error: 'Erro ao atualizar paciente.' });
+      }
     }
-}
+  },
+
+  /**
+   * @swagger
+   * /pacientes/{id}:
+   *   delete:
+   *     summary: Remove um paciente
+   *     tags: [Pacientes]
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: integer
+   *     responses:
+   *       204:
+   *         description: Paciente removido com sucesso
+   *       404:
+   *         description: Paciente não encontrado
+   */
+  remove: async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      await prisma.paciente.delete({ where: { id } });
+      res.status(204).send();
+    } catch (error: any) {
+      if (error.code === 'P2025') {
+        res.status(404).json({ error: 'Paciente não encontrado.' });
+      } else {
+        res.status(500).json({ error: 'Erro ao deletar paciente.' });
+      }
+    }
+  },
+};
