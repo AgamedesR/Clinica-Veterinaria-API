@@ -1,26 +1,20 @@
-// src/types/consulta.ts
+import type { Animal } from "./animal";
+import type { Veterinario } from "./veterinario";
+
 export interface Consulta {
   id: number;
-  dataHora: string; // ISO string
+  dataHora: string;
   motivo?: string | null;
   status: "Agendada" | "Concluída" | "Cancelada" | "Em andamento";
   anotacoes?: string | null;
   valor?: number | null;
+
   AnimalId: number;
   VeterinarioId: number;
-  Animal?: {
-    id: number;
-    nome: string;
-    especie?: string | null;
-    responsavelNome?: string | null;
-    responsavelEmail?: string | null;
-  };
-  Veterinario?: {
-    id: number;
-    nome: string;
-    especialidade?: string | null;
-    crmv?: string | null;
-  };
+
+  Animal?: Animal;
+  Veterinario?: Veterinario;
+
   createdAt?: string;
   updatedAt?: string;
 }
