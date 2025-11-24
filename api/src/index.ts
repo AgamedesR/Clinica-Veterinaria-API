@@ -16,14 +16,13 @@ const CORS_ORIGIN = process.env.CORS_ORIGIN || "http://localhost:5173";
 app.use(
   cors({
     origin: CORS_ORIGIN,
-    methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   })
 );
 
-app.use(express.json());
-
 const port = process.env.PORT || 3000;
+
+app.use(express.json());
 
 // Rotas principais
 app.use("/consultas", consultaRoutes);
