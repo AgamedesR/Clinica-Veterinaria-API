@@ -10,17 +10,19 @@ import { setupSwagger } from "./swagger";
 dotenv.config();
 
 const app = express();
-const port = process.env.PORT || 3000;
 
-app.use(express.json());
+const CORS_ORIGIN = process.env.CORS_ORIGIN || "http://localhost:5173";
 
 app.use(
   cors({
-    origin: "http://localhost:5173", // endereço do frontend
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    credentials: true, // se usar cookies/sessão
+    origin: CORS_ORIGIN,
+    credentials: true,
   })
 );
+
+const port = process.env.PORT || 3000;
+
+app.use(express.json());
 
 // Rotas principais
 app.use("/consultas", consultaRoutes);
