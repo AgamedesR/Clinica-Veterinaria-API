@@ -13,29 +13,28 @@ const app = express();
 
 const CORS_ORIGIN = process.env.CORS_ORIGIN || "http://localhost:5173";
 
-app.use(
-  cors({
-    origin: CORS_ORIGIN,
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    credentials: true,
-  })
-);
+const corsOptions = {
+  origin: CORS_ORIGIN,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  credentials: true,
+  allowedHeaders: ["Content-Type", "Authorization", "Accept", "Origin", "X-Requested-With"]
+};
+
+app.use(cors(corsOptions));
+app.options("/{*splat}", cors(corsOptions)); // responde preflight para todas rotas
 
 app.use(express.json());
 
-const port = process.env.PORT || 3000;
+const port = process.env.PORT ? Number(process.env.PORT) : 3000;
 
-// Rotas principais
 app.use("/consultas", consultaRoutes);
 app.use("/veterinarios", veterinarioRoutes);
 app.use("/animais", animalRoutes);
 app.use("/secretarios", secretarioRoutes);
 
-// Swagger
 setupSwagger(app);
 
-// Inicialização do servidor
-app.listen(port, () => {
+app.listen(port, "0.0.0.0", () => {
   console.log(`🐾 Servidor rodando em http://localhost:${port}`);
   console.log(`📘 Swagger disponível em http://localhost:${port}/api-docs`);
 });
