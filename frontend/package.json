@@ -3,11 +3,18 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "preview": "vite preview",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "typecheck": "tsc --noEmit",
+    "format": "prettier --write .",
+    "start": "vite preview --port 4173",
+    "prepare": "husky install"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -36,7 +43,9 @@
     "globals": "^16.4.0",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.45.0",
-    "vite": "npm:rolldown-vite@7.1.14"
+    "vite": "npm:rolldown-vite@7.1.14",
+    "prettier": "^2.8.8",
+    "husky": "^8.0.3"
   },
   "overrides": {
     "vite": "npm:rolldown-vite@7.1.14"
