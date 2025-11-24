@@ -1,4 +1,5 @@
 import React from "react";
+import type { Consulta } from "../../types/consulta";
 import {
   Table,
   TableBody,
@@ -8,57 +9,51 @@ import {
   TableRow,
   IconButton,
   Tooltip,
-  CircularProgress,
-  Box,
 } from "@mui/material";
-import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
-import type { Consulta } from "../../types/consulta";
+import DeleteIcon from "@mui/icons-material/Delete";
+import DescriptionIcon from "@mui/icons-material/Description";
+import { useNavigate } from "react-router-dom";
 
 interface ConsultasTableProps {
   consultas: Consulta[];
+  animais: { id: number; nome: string }[];
+  veterinarios: { id: number; nome: string }[];
   deletingId: number | null;
   onDelete: (id: number) => void;
   onEdit: (consulta: Consulta) => void;
   loading?: boolean;
 }
 
-const formatarDataHora = (dataHora?: string) => {
-  if (!dataHora) return "-";
-  const date = new Date(dataHora);
-  return date.toLocaleString("pt-BR", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-};
-
-const formatarValorBR = (v?: number | null) => {
-  if (v == null) return "-";
-  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v);
-};
-
-const ConsultasTable: React.FC<ConsultasTableProps> = ({ consultas, deletingId, onDelete, onEdit, loading = false }) => {
-  const colunas = ["Data/Hora", "Animal", "Veterinário", "Status", "Valor", "Motivo", "Ações"];
-
-  if (loading) {
-    return (
-      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", py: 8 }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
+const ConsultasTable: React.FC<ConsultasTableProps> = ({
+  consultas,
+  animais,
+  veterinarios,
+  deletingId,
+  onDelete,
+  onEdit,
+}) => {
+  const navigate = useNavigate();
 
   return (
     <TableContainer className="mt-4 rounded-lg">
       <Table>
         <TableHead>
           <TableRow className="bg-gray-800">
-            {colunas.map((col) => (
-              <TableCell key={col} align="center" className="font-bold text-white">
-                {col}
+            {[
+              "Animal",
+              "Veterinário",
+              "Data",
+              "Status",
+              "Motivo",
+              "Ações",
+            ].map((header) => (
+              <TableCell
+                key={header}
+                align="center"
+                className="font-bold text-white"
+              >
+                {header}
               </TableCell>
             ))}
           </TableRow>
@@ -67,52 +62,74 @@ const ConsultasTable: React.FC<ConsultasTableProps> = ({ consultas, deletingId, 
         <TableBody>
           {consultas.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={7} align="center" className="py-6 text-gray-500">
+              <TableCell
+                align="center"
+                colSpan={6}
+                className="py-6 text-gray-500"
+              >
                 Nenhuma consulta encontrada.
               </TableCell>
             </TableRow>
           ) : (
-            consultas.map((c) => (
-              <TableRow key={c.id} hover className="hover:bg-blue-50">
-                <TableCell align="center">{formatarDataHora(c.dataHora)}</TableCell>
+            consultas.map((consulta) => {
+              const animal = animais.find((a) => a.id === consulta.AnimalId);
+              const vet = veterinarios.find(
+                (v) => v.id === consulta.VeterinarioId
+              );
 
-                <TableCell align="center">
-                  {c.Animal ? `${c.Animal.nome} - ${c.Animal.especie || "-"} (Dono: ${c.Animal.responsavelNome || "-"})` : c.AnimalId}
-                </TableCell>
+              return (
+                <TableRow key={consulta.id} hover>
+                  <TableCell align="center">{animal?.nome}</TableCell>
+                  <TableCell align="center">{vet?.nome}</TableCell>
+                  <TableCell align="center">
+                    {new Date(consulta.dataHora).toLocaleString("pt-BR")}
+                  </TableCell>
+                  <TableCell align="center">{consulta.status}</TableCell>
+                  <TableCell align="center">{consulta.motivo || "-"}</TableCell>
 
-                <TableCell align="center">
-                  {c.Veterinario ? `${c.Veterinario.nome} - ${c.Veterinario.especialidade || "-"}` : c.VeterinarioId}
-                </TableCell>
+                  <TableCell align="center">
+                    <div className="flex justify-center gap-2">
 
-                <TableCell align="center">{c.status}</TableCell>
+                      {/* FICHA */}
+                      <Tooltip title="Abrir ficha">
+                        <IconButton
+                          size="small"
+                          color="secondary"
+                          onClick={() =>
+                            navigate(`/consulta/${consulta.id}/ficha`)
+                          }
+                        >
+                          <DescriptionIcon />
+                        </IconButton>
+                      </Tooltip>
 
-                <TableCell align="center">{formatarValorBR(c.valor)}</TableCell>
+                      {/* EDITAR */}
+                      <Tooltip title="Editar">
+                        <IconButton
+                          size="small"
+                          color="primary"
+                          onClick={() => onEdit(consulta)}
+                        >
+                          <EditIcon />
+                        </IconButton>
+                      </Tooltip>
 
-                <TableCell align="center">{c.motivo || "-"}</TableCell>
-
-                <TableCell align="center">
-                  <div className="flex justify-center gap-2">
-                    <Tooltip title="Editar">
-                      <IconButton color="primary" size="small" onClick={() => onEdit(c)}>
-                        <EditIcon />
-                      </IconButton>
-                    </Tooltip>
-
-                    <Tooltip title="Remover">
-                      <IconButton
-                        color="error"
-                        size="small"
-                        onClick={() => onDelete(c.id)}
-                        disabled={deletingId === c.id}
-                        aria-label={`remover-${c.id}`}
-                      >
-                        <DeleteIcon />
-                      </IconButton>
-                    </Tooltip>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))
+                      {/* DELETAR */}
+                      <Tooltip title="Excluir">
+                        <IconButton
+                          size="small"
+                          color="error"
+                          disabled={deletingId === consulta.id}
+                          onClick={() => onDelete(consulta.id)}
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </Tooltip>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              );
+            })
           )}
         </TableBody>
       </Table>

@@ -1,4 +1,3 @@
-// src/pages/ConsultasPage.tsx
 import React, { useEffect, useMemo, useState } from "react";
 import type { Consulta } from "../types/consulta";
 import type { Animal } from "../types/animal";
@@ -134,7 +133,6 @@ const ConsultasPage: React.FC = () => {
     setCriarModalOpen(false);
   };
 
-  // combinação de filtros + busca com debounce
   const consultasFiltradas = useMemo(() => {
     let lista = [...consultas];
 
@@ -340,11 +338,14 @@ const ConsultasPage: React.FC = () => {
 
         <ConsultasTable
           consultas={consultasFiltradas}
+          animais={animais}
+          veterinarios={veterinarios}
           deletingId={deletingId}
           onDelete={handleDelete}
           onEdit={handleOpenEditModal}
           loading={loading}
         />
+
 
         <Box mt={3} display="flex" justifyContent="flex-end">
           <Button
