@@ -1,4 +1,3 @@
-// src/pages/Animais.tsx
 import React, { useEffect, useMemo, useState } from "react";
 import type { Animal } from "../types/animal";
 import { getAnimais, deleteAnimal } from "../services/animalService";
@@ -91,7 +90,6 @@ const Animais: React.FC = () => {
     setSnackbar({ open: true, message: "Animal cadastrado com sucesso.", severity: "success" });
   };
 
-  // lista filtrada
   const animaisFiltrados = useMemo(() => {
     let lista = [...animais];
     const s = debouncedSearch.trim().toLowerCase();
@@ -113,7 +111,6 @@ const Animais: React.FC = () => {
     return lista;
   }, [animais, debouncedSearch, filtroEspecie, filtroSexo]);
 
-  // espécies e sexos disponíveis
   const especies = Array.from(new Set(animais.map((a) => a.especie).filter(Boolean)));
   const sexos = Array.from(new Set(animais.map((a) => a.sexo).filter(Boolean)));
 

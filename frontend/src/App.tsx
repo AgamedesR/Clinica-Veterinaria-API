@@ -9,6 +9,7 @@ import AnimaisPage from "./pages/AnimaisPage";
 import VeterinariosPage from "./pages/VeterinariosPage";
 import SecretariosPage from "./pages/SecretariosPage";
 import ConsultasPage from "./pages/ConsultasPage";
+import FichaConsultaPage from "./pages/FichaConsultaPage";
 
 function App() {
   const [mode, setMode] = useState<"light" | "dark">("light");
@@ -35,6 +36,7 @@ function App() {
           <Route path="/veterinarios" element={<VeterinariosPage />} />
           <Route path="/secretarios" element={<SecretariosPage />} />
           <Route path="/consultas" element={<ConsultasPage />} />
+          <Route path="/consulta/:id/ficha" element={<FichaConsultaPage />} />
 
         </Routes>
       </Router>

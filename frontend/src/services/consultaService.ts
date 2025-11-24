@@ -8,6 +8,11 @@ export const getConsultas = async (): Promise<Consulta[]> => {
   return res.data;
 };
 
+export const getConsultaById = async (id: number): Promise<Consulta> => {
+  const res = await axios.get<Consulta>(`${API_BASE}/consultas/${id}`);
+  return res.data;
+};
+
 export const createConsulta = async (dados: Omit<Consulta, "id" | "createdAt" | "updatedAt">): Promise<Consulta> => {
   const res = await axios.post<Consulta>(`${API_BASE}/consultas`, dados);
   return res.data;
