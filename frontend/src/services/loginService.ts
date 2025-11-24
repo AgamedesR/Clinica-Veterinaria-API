@@ -1,7 +1,7 @@
 import axios from "axios";
 import type { Secretario } from "../types/secretario";
 
-const API_BASE = "http://localhost:3000";
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
 export const login = async (
   email: string,

@@ -1,7 +1,7 @@
 import axios from "axios";
 import type { Consulta } from "../types/consulta";
 
-const API_BASE = "http://localhost:3000";
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
 export const getConsultas = async (): Promise<Consulta[]> => {
   const res = await axios.get<Consulta[]>(`${API_BASE}/consultas`);
