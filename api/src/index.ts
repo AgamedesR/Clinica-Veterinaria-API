@@ -1,6 +1,6 @@
 import express from "express";
 import dotenv from "dotenv";
-import cors from "cors";
+import cors, { CorsOptions } from "cors";
 import consultaRoutes from "./routes/consultaRoutes";
 import veterinarioRoutes from "./routes/veterinarioRoutes";
 import animalRoutes from "./routes/animalRoutes";
@@ -13,8 +13,14 @@ const app = express();
 
 const CORS_ORIGIN = process.env.CORS_ORIGIN || "http://localhost:5173";
 
-const corsOptions = {
-  origin: CORS_ORIGIN,
+const corsOptions: CorsOptions = {
+  origin: (origin: string | undefined, callback: (err: Error | null, allowed?: boolean) => void) => {
+    if (!origin || origin === CORS_ORIGIN) {
+      callback(null, true);
+    } else {
+      callback(new Error("Não permitido por CORS"));
+    }
+  },
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   credentials: true,
   allowedHeaders: ["Content-Type", "Authorization", "Accept", "Origin", "X-Requested-With"]
