@@ -1,6 +1,6 @@
 import express from "express";
 import dotenv from "dotenv";
-import cors, { CorsOptions } from "cors";
+import cors from "cors";
 import consultaRoutes from "./routes/consultaRoutes";
 import veterinarioRoutes from "./routes/veterinarioRoutes";
 import animalRoutes from "./routes/animalRoutes";
@@ -13,34 +13,29 @@ const app = express();
 
 const CORS_ORIGIN = process.env.CORS_ORIGIN || "http://localhost:5173";
 
-const corsOptions: CorsOptions = {
-  origin: (origin: string | undefined, callback: (err: Error | null, allowed?: boolean) => void) => {
-    if (!origin || origin === CORS_ORIGIN) {
-      callback(null, true);
-    } else {
-      callback(new Error("Não permitido por CORS"));
-    }
-  },
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  credentials: true,
-  allowedHeaders: ["Content-Type", "Authorization", "Accept", "Origin", "X-Requested-With"]
-};
-
-app.use(cors(corsOptions));
-app.options("/{*splat}", cors(corsOptions)); // responde preflight para todas rotas
+app.use(
+  cors({
+    origin: CORS_ORIGIN,
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
+  })
+);
 
 app.use(express.json());
 
-const port = process.env.PORT ? Number(process.env.PORT) : 3000;
+const port = process.env.PORT || 3000;
 
+// Rotas principais
 app.use("/consultas", consultaRoutes);
 app.use("/veterinarios", veterinarioRoutes);
 app.use("/animais", animalRoutes);
 app.use("/secretarios", secretarioRoutes);
 
+// Swagger
 setupSwagger(app);
 
-app.listen(port, "0.0.0.0", () => {
+// Inicialização do servidor
+app.listen(port, () => {
   console.log(`🐾 Servidor rodando em http://localhost:${port}`);
   console.log(`📘 Swagger disponível em http://localhost:${port}/api-docs`);
 });
