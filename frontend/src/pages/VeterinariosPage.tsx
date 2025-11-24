@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import type { Veterinario } from "../types/veterinario";
 import { getVeterinarios, deleteVeterinario } from "../services/veterinarioService";
 import {
@@ -9,6 +9,7 @@ import {
   Button,
   Snackbar,
   Alert,
+  TextField,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useNavigate } from "react-router-dom";
@@ -25,6 +26,8 @@ const VeterinariosPage: React.FC = () => {
   const [snackbar, setSnackbar] = useState<SnackbarState>({ open: false, message: "", severity: "info" });
   const [veterinarioEditando, setVeterinarioEditando] = useState<Veterinario | null>(null);
   const [criarModalOpen, setCriarModalOpen] = useState(false);
+
+  const [busca, setBusca] = useState("");
 
   useEffect(() => {
     (async () => {
@@ -52,31 +55,45 @@ const VeterinariosPage: React.FC = () => {
     }
   };
 
-  const handleOpenEditModal = (veterinario: Veterinario) => setVeterinarioEditando(veterinario);
-  const handleCloseEditModal = () => setVeterinarioEditando(null);
-  const handleSaveVeterinario = (veterinarioAtualizado: Veterinario) => {
-    setVeterinarios((prev) => prev.map((v) => v.id === veterinarioAtualizado.id ? veterinarioAtualizado : v));
-    setSnackbar({ open: true, message: "Veterinário atualizado com sucesso.", severity: "success" });
-  };
-
-  const handleSuccessCreate = (novoVeterinario: Veterinario) => {
-    setVeterinarios((prev) => [...prev, novoVeterinario]);
-    setSnackbar({ open: true, message: "Veterinário criado com sucesso.", severity: "success" });
-    setCriarModalOpen(false);
-  };
+  const veterinariosFiltrados = useMemo(() => {
+    return veterinarios.filter(v =>
+      v.nome.toLowerCase().includes(busca.toLowerCase())
+    );
+  }, [busca, veterinarios]);
 
   return (
     <Box display="flex" flexDirection="column" alignItems="center" minHeight="100vh" p={3}>
       <Paper elevation={3} sx={{ width: "100%", maxWidth: 1000, p: 3, position: "relative", borderRadius: 2 }}>
+        
         <IconButton aria-label="voltar" onClick={() => navigate("/home")} size="small" sx={{ position: "absolute", left: 16, top: 16 }}>
           <ArrowBackIcon fontSize="small" />
         </IconButton>
-        <Typography variant="h5" fontWeight={600} mb={3} textAlign="center">Lista de Veterinários</Typography>
 
-        <VeterinariosTable veterinarios={veterinarios} deletingId={deletingId} onDelete={handleDelete} onEdit={handleOpenEditModal} />
+        <Typography variant="h5" fontWeight={600} mb={3} textAlign="center">
+          Lista de Veterinários
+        </Typography>
+
+        {/* Campo de Filtro */}
+        <TextField
+          label="Buscar por nome"
+          variant="outlined"
+          fullWidth
+          margin="normal"
+          value={busca}
+          onChange={(e) => setBusca(e.target.value)}
+        />
+
+        <VeterinariosTable
+          veterinarios={veterinariosFiltrados}
+          deletingId={deletingId}
+          onDelete={handleDelete}
+          onEdit={(v) => setVeterinarioEditando(v)}
+        />
 
         <Box mt={3} display="flex" justifyContent="flex-end">
-          <Button variant="contained" color="primary" onClick={() => setCriarModalOpen(true)}>Novo Veterinário</Button>
+          <Button variant="contained" color="primary" onClick={() => setCriarModalOpen(true)}>
+            Novo Veterinário
+          </Button>
         </Box>
 
         <Snackbar open={snackbar.open} autoHideDuration={4000} onClose={() => setSnackbar((s) => ({ ...s, open: false }))} anchorOrigin={{ vertical: "top", horizontal: "right" }}>
@@ -86,8 +103,15 @@ const VeterinariosPage: React.FC = () => {
         </Snackbar>
       </Paper>
 
-      <EditarVeterinarioModal open={veterinarioEditando !== null} veterinario={veterinarioEditando} onClose={handleCloseEditModal} onSave={handleSaveVeterinario} />
-      <CriarVeterinarioModal open={criarModalOpen} onClose={() => setCriarModalOpen(false)} onSuccess={handleSuccessCreate} />
+      <EditarVeterinarioModal open={veterinarioEditando !== null} veterinario={veterinarioEditando} onClose={() => setVeterinarioEditando(null)} onSave={(vet) => {
+        setVeterinarios((prev) => prev.map((v) => v.id === vet.id ? vet : v));
+        setSnackbar({ open: true, message: "Veterinário atualizado com sucesso.", severity: "success" });
+      }} />
+
+      <CriarVeterinarioModal open={criarModalOpen} onClose={() => setCriarModalOpen(false)} onSuccess={(novo) => {
+        setVeterinarios((prev) => [...prev, novo]);
+        setSnackbar({ open: true, message: "Veterinário criado com sucesso.", severity: "success" });
+      }} />
     </Box>
   );
 };
