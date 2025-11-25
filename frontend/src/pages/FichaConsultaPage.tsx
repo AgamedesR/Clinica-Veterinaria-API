@@ -1,4 +1,3 @@
-// src/pages/FichaConsultaPage.tsx
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Box, Paper, Typography, Divider, CircularProgress, Button } from "@mui/material";

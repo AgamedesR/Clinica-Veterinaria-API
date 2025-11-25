@@ -20,7 +20,7 @@ db-data/
 # VS Code
 .vscode/
 
-# Sistema operacional
+# Sistema operacional (SO)
 .DS_Store
 Thumbs.db
 
